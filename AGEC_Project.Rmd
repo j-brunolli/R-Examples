@@ -1,0 +1,530 @@
+---
+title: What's The Difference? An Analysis of Hours and Productivity of Germany and
+  Poland
+author: "John Brunolli"
+date: "May 6, 2019"
+fontsize: 12pt
+geometry: margin = 1in
+output: pdf_document 
+---
+
+\section{Introduction}
+
+Have you ever wondered what life would be like with a shorter work week? I thought about 
+
+that too when I was a full-time worker. But I look at European countries, I overall notice 
+
+they work less hours than American workers and that got me thinking about what the 
+
+economic outcomes may happen if the United States goes along with this trend. After 
+
+researching some popular articles and some academic papers behind labor economics, 
+
+they generally show that European countries have had their full-time hours follow a 
+
+downward trend. But however, testing every European country would take a lot of time 
+
+since there are plenty nations in the European continent. Therefore, conducting a simple 
+
+standard OLS regression may not be the most optimal action to partake in for this task, 
+
+therefore I am going to use difference in difference approach. Now the natural question is 
+
+which European countries shall I use for the difference in difference estimation? After  
+
+long and careful considerations, I have decided to test Germany and Poland.  
+
+I wish to pursue this idea because this is an interesting proposition from an economics point 
+
+of view. That is if I am producing at the same rate but at a shorter work schedule then would 
+
+it make sense for countries to follow this natural trend. This trend has started in Germany 
+
+after major unions, such as the IG Metal union in Germany, won major bargaining agreements 
+
+with firms in regard to negotiations of working hours. Their main purpose behind these hours 
+
+is to give workers a chance to enjoy life outside from work. That does make sense because 
+
+having time with family is important, time away from work can help make some workers 
+
+happy and makes working conditions a little more bearable. In 2008 that's when other 
+
+German industries also decided to adopt this idea too and that's why we observe Germany 
+
+work at around 35 hours a week. All these are good and reasonable, then comes the natural 
+
+question what will happen to productivity of the entire German continent? Also, what will 
+
+happen to the overall national wages of the workers? That is what I am attempting in this 
+
+model, but why did I choose Poland as a comparison?   
+
+Then arises the natural question, why Germany and Poland? Why not France and Germany, 
+
+Germany and the Czech Republic, why those two. I selected these countries based on a 
+
+couple of different criteria. First both countries are right next to each other. That 
+
+argument can be said with Belgium, France, the Czech Republic, but I'll elaborate further 
+
+towards my criteria. But if I chose Italy and Germany I may get some concerns arising 
+
+since there is a good amount of distance between these countries, but I remember writing 
+
+a paper on Italian culture and a good amount of Italians sometimes distance themselves 
+
+from other European countries because they feel they have a different culture. That is 
+
+very subjective, but that's a flaw I saw with a country like Italy, and certainly 
+
+climate and policies sure impacted my decision too. Now the main reason why I chose these 
+
+two countries is based on the trends I observe from these two unique European countries.
+
+Primarily since according to the trends within the data and popular sources, Germany is 
+
+exhibiting a downward trend in working hours and a lot of Germans work 35-hour days on 
+
+average. While Poland has one of the longer workdays within the European continent. Both 
+
+countries have similar work laws on the books, but the only difference is that Germany is 
+
+on a downward trend in their working hours, while Poland still maintains some of the 
+
+longest working hours in Europe. This can be illustrated with both of these graphs. 
+
+```{r, include=FALSE}
+library(readxl)
+
+DataFinal_1 <- read_excel("C:/Users/rbrun/Downloads/DataFinal_1.xlsx", 
+                          col_types = c("text", "text", "numeric", 
+                                        "numeric", "numeric", "numeric", 
+                                        "numeric", "numeric", "numeric", 
+                                        "numeric", "numeric", "numeric", 
+                                        "numeric", "numeric", "numeric", 
+                                        "numeric", "numeric", "numeric")) 
+
+Poland <- read_excel("C:/Users/rbrun/Downloads/Poland.xlsx",
+                            col_types = c("text", "text", "numeric", 
+                                           "numeric", "numeric", "numeric", 
+                                           "numeric", "numeric", "numeric", 
+                                           "numeric", "numeric", "numeric", 
+                                           "numeric", "numeric", "numeric", 
+                                           "numeric", "numeric", "numeric"))
+
+Germany <- read_excel("C:/Users/rbrun/Downloads/Germany.xlsx", 
+    col_types = c("text", "text", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric"))
+```
+
+```{r, include=TRUE, echo=TRUE}
+plot(Germany$Time, Germany$Hours)
+
+plot(Germany$Time, Germany$Productivity)
+
+plot(Germany$Time, Germany$Wage)
+```
+
+Here I notice a downward trend within the German working hours over time. With this plot 
+
+clearly demonstrating that the trend is decreasing, with the occasional increase in the 
+
+working hours, but pretty much have decreased. Notice though that the productivity has 
+
+continued to rise for Germany even though that goes against neoclassical labor production 
+
+theory I should observe production to decrease. The trend is a little awkward if you ask me. 
+
+Also, here wage is continuing to increase over time. Even when the trend for hours worked in 
+
+a work week is decreasing. That makes my question more interesting because gaining 
+
+knowledge on this trend will only be an effective way of how to carry out and manage a 
+
+successful economy. 
+
+```{r, include=TRUE, echo=TRUE}
+Poland_1=Poland[c(-1, -2, -3, -4, -5,-6),]
+#View(Poland)
+plot(Poland_1$Time, Poland_1$Hours)
+plot(Poland_1$Time, Poland_1$Productivity)
+plot(Poland_1$Time, Poland_1$Wage)
+```
+
+Here what I notice for Poland is that there working hours for the most part remain consistent 
+
+up until 2008 and then there was a decrease in working hours, probably due to the economic 
+
+recession in 2008, but their hours are still higher than Germany's. Also, their wages and
+
+production have continually increased and that does coincide with labor and macroeconomic 
+
+theory regarding working hours and productivity and wage. Based on these graphs and trends
+
+within both economies, I am curious to see what the overall effects of the German's economy's 
+
+trend towards shorter working hours are have on their productivity and wage. I am going to 
+
+implement a difference and difference estimation in order to effectively test this by comparing
+
+the German and Polish economies. My analysis should hopefully gain insight into whether 
+
+neoclassical production theory and macroeconomic principles will hold and therefore, I will 
+
+expect the German economy to see a decrease in their wages and their production. 
+
+\section{Methodology}
+
+I gathered my data from the OECD database website and I composed into three datasets.
+
+I composed the data into three datasets because first I needed to make references to 
+
+what are the trends within the data, so I collected each of the two countries 
+
+individually first. Then I collected a third dataset with each of these two countries
+
+together in order to conduct the DID estimation. I couldn't combine the two datasets 
+
+in R, therefore I had to collect another dataset, but I kept every variable constant.
+
+I personally think that a standard OLS regression for both the German and Polish economy 
+
+may explain a correlation, but will that be efficient? Therefore, the following equations:
+
+$$
+Production= \beta_0 + \beta_1*Hours + \epsilon
+$$
+
+and
+
+$$
+Wage=\beta_0 + \beta_1*Hours + \epsilon
+$$
+
+These may provide good insight for correlation, but that's not what's at stake here. Here I 
+
+am trying to observe some potential causality between wage and production and hours. 
+
+After careful examination of the data and the methods I can implement, I have chosen to go 
+
+with the difference in difference approach since that makes the most sense to implement in 
+
+this case considering that having an instrumental variable to may explain causation for 
+
+Germany, butfails to explain Poland. Also, an RDD here I think would be too difficult to 
+
+implement considering the nature of the data. Therefore, the formal equations I will implement 
+
+are: 
+
+$$
+Production= \beta_0 + \beta_1*TD + \beta_2*CD + \beta_3*DID + \epsilon
+$$
+
+and 
+
+$$
+Wage= \beta_0 + \beta_1*TD + \beta_2*CD + \beta_3*DID + \epsilon
+$$
+
+Where TD is my time variable where I generated a dummy variable where 1 equals the year 
+
+greater than or equal to 2008, 0 if otherwise. CD is the dummy variable I generated where 1 
+
+equals Germany, 0 if Poland. The DID is my difference between when the 35-hour work week 
+
+trend started for Germany and the time. This difference in difference estimation equation 
+
+will provide a better understanding of the causality between implementing a 35-hour work 
+
+week and what the impacts the policy has on productivityand wages. That was I will observe 
+
+the treatment effect of this policy in regards to what happened to Germany compared to 
+
+Poland. Now of course there was issues with the data, mainly incomplete entries within the 
+
+variables of measure, therefore I had to clean up the data in order to actually proceed 
+
+further with the tests and analysis. After, that issue was resolved, then I generated my 
+
+difference in difference estimation and just to double check on my adjusted R^2 and my R^2 
+
+I ran a Breusch-Pagan test to determine if heteroskedasticity is present and I ran a 
+
+Shapiro-Wilks test to test to see if the model is normal.
+
+\section{Results}
+
+In order to run my analysis, I had to clean up some data because there were some missing 
+
+variables for Poland. That can be attributed to the cold war since Poland was under Soviet 
+
+control until 1989. After the data was cleaned up, I finally implemented my difference in 
+
+difference estimation in regards to production. 
+
+```{r, include=TRUE}
+GerPol=DataFinal_1[c(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11),]
+GerPol$TD=ifelse(GerPol$Time >= 2008, 1, 0)
+#View(GerPol)
+GerPol$CD=ifelse(GerPol$Country == "Germany", 1, 0)
+GerPol$did=GerPol$TD * GerPol$CD
+```
+
+```{r, include=TRUE, echo=TRUE}
+modeldid=lm(Productivity~TD + CD + did, data = GerPol)
+summary(modeldid)
+```
+
+These numbers are what the neoclassical production theory tells us and that's the less hours 
+
+worked then there will be less production. There could also be factors at play here that could 
+
+explain the production loss. For example, take the time, simply the time interprets that on 
+
+average 2008 and beyond was 31% more productive than Poland in between 2008 to 2019. 
+
+That gets to my main assertion because there was a global recession, hence that could explain
+
+why we see the drop-in production. Also, Germany on average produced 17% more than 
+
+Poland in general. But overall the main interpretation from this model is that when Germany 
+
+started to follow the trend and worked on average for hours their production decreased by 
+
+24% compared to Poland who didn't follow suit. But overall the treatment effect shows that 
+
+when Germany lowered it's work week hours to 35, it experienced a 24% loss of production. 
+
+But there's another aspect I need to examine, how will the 35-hour work week affect the 
+
+wages of the workers. Using my DID on Wages I found the following: 
+
+```{r, include=TRUE, echo=TRUE}
+modeldidw=lm(Wage~TD + CD + did, data = GerPol)
+summary(modeldidw)
+```
+
+These results following what I expect from my experiences with macroeconomic theory. As I 
+
+observe on average the 35-hour work week has decreased the income of Germany by 12,834 
+
+Euros. Compared to Poland who didn't implement the 35-hour work week, this can be 
+
+concerning considering that no one wants to see their incomes decrease especially by tens 
+
+of thousands of dollars. What can be impacting this? Looking back at the time frame, there 
+
+was a global economic recession back in 2008 and that could be impacting these results. 
+
+That would not be shocking to observe the impact of the recession, especially since the 
+
+recession did cause a lot of layoffs of workers globally, therefore wages would naturally 
+
+decrease. All in all, I am not surprised with the results and is consistent with standard 
+
+macroeconomic theory. But I will check both of these models for normality and 
+
+heteroskedastictiy just to check the assurance of the DID models I generated.
+
+```{r, include=TRUE}
+library(lmtest)
+```
+
+```{r, include=TRUE, echo=TRUE}
+bptest(modeldid)
+resdid=modeldid$residuals
+shapiro.test(resdid)
+```
+
+Here I used a Breusch-Pagan test to test for heteroskedasticity present within my models. 
+
+I used the Breusch-Pagan test because I am more confident in that test than I am with the
+
+White's test or another way to measure. Also, I am testing for normality using a 
+
+Shapiro-Wilk normality test. After conducting these tests on my productivity difference 
+
+and difference estimation I can conclude that there is heteroskedasticity present in my 
+
+model and based on the Shapiro-Wilk test, I can conclude that the model is normal. 
+
+Heteroskedasticity can be a problem or a concern, but here I am not concerned because 
+
+considering the nature of the data being randomly collected, I think that this is not a 
+
+problem. Also, the fact that my R^2 and adj R^2 are relatively high, I am confident that 
+
+this model is a good step in the right direction. 
+
+```{r, include=TRUE, echo=TRUE}
+bptest(modeldidw)
+resdidw=modeldidw$residuals
+shapiro.test(resdidw)
+```
+
+So, can heteroskedasticity affect the validity of my model? Here I don't think so because 
+
+given the nature of the data I am analyzing, wages can vary within thousands of dollars, 
+
+the heteroskedasticity present may not be a problem. That's because the data by nature is 
+
+already going to have vastly different ranges of values that the wage can take. So overall, 
+
+the wage DID estimation is still valid, even though heteroskedasticity is present, because 
+
+of the nature of the data and the satisfactory levels of R^2 and adj R^2. 
+
+
+\section{Discussion}
+
+As I stated earlier my results generated from my DID regression are not at all surprising. 
+
+These are consistent with what neoclassical production theory and macroeconomic theory 
+
+predicts what would happen. But there are some concerns the results give? Mainly because 
+
+take the wage, the wage of a German citizen is on average higher than the average Polish 
+
+citizen. Then it is natural to ask, why does Germany still have more income than Poland at 
+
+least with raw data? It could tie back to again West Germany was not part of Soviet control, 
+
+East Germany and Poland were under Soviet control, therefore, it may be possible that 
+
+Germany when the country was recombined, benefitted greatly from the reuniting of the 
+
+country and therefore minimizing the overall effect of being under Soviet controlled, 
+
+while Poland doesn't have that luxury. Also, there could be other factors I am not considering 
+
+in my model such as Germany's strong education program, technological advantages, and 
+
+political stability that may affect this that I am not able to measure. The recession as 
+
+I elaborated multiple times in the results section could be greatly impacting the results, 
+
+considering I am controlling within 2008 to 2010, during the height of the global recession 
+
+can significantly impact these results. Maybe you'd think Poland is less protected than 
+
+Germany, but again the results are demonstrating trends within the 35-hour work week trend. 
+
+Then the natural question is asked about can we trust the models? Certainly, looking at 
+
+the R^2 and the adj R^2 both models appear to be doing a pretty good job of explaining the 
+
+noise within the data. The standard errors for the production models are very small, 
+
+therefore I have confidence in that model. However, in the wage DID, there were high 
+
+standard errors with the treatment effect being at 2,649. That is concerning from a raw 
+
+numbers point of view but considering that wages are within tens of thousands of dollars, 
+
+is it necessarily a bad thing with this high standard error, given the data I am working 
+
+with? I mean for sake of argument, I will assume that the on average the 35-hour work week 
+
+decreases in earnings by 10,000, I predicted roughly 12,000. That is not that far off 
+
+because the data is wages of both countries. I am fairly confident with this model, I am not 
+
+that concerned about heteroskedasticity being present considering that I do have 
+
+favorable R^2's and adj R^2's in both models and the fact that each of these variables 
+
+are statistically significant is reassuring that the treatment effect has something to 
+
+do with the taking on of the 35-hour work week. Overall, I am pleased with this model and 
+
+is a good starting point in figuring out the overall effects of the adoption of a 35-hour 
+
+work week. 
+
+\section{Conclusion}
+
+My models I generated have overall determined what I expected from a labor and 
+
+macroeconomic point of view. The model showed that when Germany have implemented the 
+
+trend in their country of a 35-hour work week, I observed that production and wages 
+
+fell. There were some surprising details there to as well, and perhaps contradicting 
+
+such as on average just by being in Germany and being a Polish citizen might yield more 
+
+money than German's are what the resultsare telling me. But the big question is did this 
+
+model solved the riddle. Of course not, I think this is a good stepping stone, however 
+
+there are limitations to this model. One is the fact that the model cannot account for
+
+the effects of the recession. I am confident that the recession is affecting my results 
+
+without a doubt, but is that affect stronger than the effect of the 35-hour work week?
+
+Also, are there other factors that I am not accounting for such as Germany's political 
+
+stability vs Poland's instability. How impactful is the German education system on 
+
+the wage and productivity considering Germany has strong scores in educational
+
+measurements, while Poland is not there? With this model will Germany stop this trend 
+
+towards a 35-hour work week. I doubt it since that the country has strong labor unions 
+
+and one of the most powerful labor unions won a 28-hour work week for its workers now 
+
+it might be inevitable that Germany will adjust its work weeks. All in all, this project 
+
+has been interesting from many elements, but I am pleased with the model and the 
+
+implications from the following implementation of the 35-hour work week.
+
+\newpage
+
+\section{Works Cited}
+
+Burda, Michael C., et al. "Cyclical Variation in Labor Hours and Productivity Using 
+
+the ATUS." The American Economic Review, vol. 103, no. 3, 2013, pp. 99-104. JSTOR, 
+
+www.jstor.org/stable/23469710.
+
+Petroff , Alanna Petroff. "German Workers Win Right to 28-Hour Week." CNNMoney, 
+
+Cable News Network, 7 Feb.2018,
+
+money.cnn.com/2018/02/07/news/economy/germany-28-hour-work-week/index.html.
+
+"Features of German Labor and Employment Law." WilmerHale, 8 Oct. 2003, 
+
+www.wilmerhale.com/en/insights/publications/features-of-german-labor-and-employment-law-october-8-2003
+
+Germany Trade and Invest GmbH. "Terms of Employment." GTAI, Germany Trade & Invest, 2019, 
+
+www.gtai.de/GTAI/Navigation/EN/Invest/Investment-guide/Employees-and-social-security/terms-of-employment.html.
+
+"Labour Regulations." Www.paih.gov.pl, Polish Development Fund, 2019, 
+
+www.paih.gov.pl/polish_law/labour_regulations.
+
+Oecd. Economic Outlook No 104 - November 2018., OECD, 2018, 
+
+stats.oecd.org/viewhtml.aspx?datasetcode=EO104_INTERNET&lang=en#.
+
+OpenStax. "Principles of Economics: Chapter 4." Principles of Economics, Pressbooks, 2019, 
+
+opentextbc.ca/principlesofeconomics/chapter/4-1-demand-and-supply-at-work-in-labor-markets/#Table_04_0
+
+2.
+
+Sarva, Amol. "Why Germans Work Fewer Hours But Produce More: A Study In Culture." 
+
+HuffPost, 7 Dec. 2017, www.huffpost.com/entry/why-germans-work-fewer-ho_b_6172262.
