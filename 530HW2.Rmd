@@ -1,0 +1,318 @@
+---
+title: "STATS 530 HW#2"
+author: "John Brunolli"
+date: "March 2, 2019"
+output: pdf_document
+---
+
+\section{Question 1}
+
+\subsection{a.}
+
+```{r, include=TRUE}
+set.seed(1)
+x1=runif(100)
+x2=0.5*x1+rnorm(100)/10
+y=2+2*x1+0.3*x2+rnorm(100)
+```
+
+The regression coefficients are 2 for b0, 2 for b1 and 0.3 for b2. Y= b0 + b1x1 + b2x2 + e.
+
+\subsection{b.}
+
+```{r, include=TRUE}
+cor(x1,x2)
+plot(x1,x2)
+```
+
+The correlation between x1 and x2 is 0.85. 
+
+\subsection{c.}
+
+```{r, include=TRUE}
+model1=lm(y~x1+x2)
+summary(model1)
+```
+
+As demonstrated by this regression the predicted coefficents for x1 and x2 are x1=1.43 and x2=1.01.
+Also, b0 is 2.13 and the predicted b0 and b1 does not differ from it's true value too much.
+But, b2 value is off from it's predicted value by 0.7. I can reject the null for b1. 
+However, for b2 I fail to reject the null and conclude it is not statistically significant.
+
+\subsection{d.}
+
+```{r, include=TRUE}
+model2=lm(y~x1)
+summary(model2)
+```
+
+This generates some interesting conclusions. First the predicted value is closer to it's true,
+value than compared to in subsection c. Also, I can reject the null hypothesis and conclude,
+that it is statistically significant. This seems to be a better job explaining the noise,
+than what c's regression did. 
+
+\subsection{e.}
+
+```{r, include=TRUE}
+model3=lm(y~x2)
+summary(model3)
+```
+
+This regression is very unique. First, this model is indicating that the predicted value
+of b2 is vastly different from the true value of b2=0.3. Also, as opposed to the the regression
+model in c., I can reject the null that b2=0 and can conclude that it is statistically 
+significant. This tells me that my regression in part c may not be doing a good job of explaining
+my dependent variable with my independent variables and may need to implement some solutions.
+
+\subsection{f.}
+
+Yes, my results from c to e contradict each other. Primarly with x2, the b2's in c and e were 
+completely different from each other in regards to the predicted b2 and with whether or not 
+b2 is statistically significant. The p value for x1 is significantly smaller than in c and 
+indicates to me that x1 is doing a good job of explaining the responsive variable y.
+
+
+\subsection{g.}
+
+```{r, include=TRUE}
+x1=c(x1,0.1)
+x2=c(x2,0.8)
+y=c(y,6)
+
+modg=lm(y~x1+x2)
+summary(modg)
+summary(model1)
+
+model4=lm(y~x1)
+summary(model4)
+summary(model2)
+
+model5=lm(y~x2)
+summary(model5)
+summary(model3)
+
+library(MASS)
+stres=studres(modg)
+cooks=cooks.distance(modg)
+plot(cooks)
+plot(stres)
+cooks1=cooks.distance(model4)
+plot(cooks1)
+stres1=studres(model4)
+plot(stres1)
+stres2=studres(model5)
+plot(stres2)
+cooks2=cooks.distance(model5)
+plot(cooks2)
+```
+
+Here, we are seeing completely different results based on the change of the x's and y's. 
+With the model both including x1 and x2 it is not really explaining the true valuess as well.
+Also, x1 is not statistically significant and x2 is in this model. The changes in d's and e's 
+model is really just with the coefficients are different and it is statisitcally significant
+with both models. As demonstrated here the cooks distance and standarized student residuals
+indicate that there are outliers and leverage points within this dataset and should be removed 
+in order to improve the model.
+
+\section{Question 2}
+
+\subsection{a.}
+
+```{r, include=TRUE}
+set.seed(1)
+n=25
+x=rnorm(25,0,1)
+e=rnorm(25,0,1)
+y=exp(x)+e
+
+```
+
+\subsection{b.}
+
+```{r, include=TRUE}
+model4=lm(y~x)
+summary(model4)
+model5=lm(y~x+I(x^2))
+summary(model5)
+model6=lm(y~x+I(x^2)+I(x^3))
+summary(model6)
+model7=lm(y~x+I(x^2)+I(x^3)+I(x^4))
+summary(model7)
+```
+
+\subsection{c.}
+
+```{r, include=TRUE}
+n=500
+x=rnorm(n,0,1)
+e=rnorm(n,0,1)
+y=exp(x)+e
+x2=x^2
+x3=x^3
+x4=x^4
+```
+
+\subsection{d.}
+
+```{r, include=TRUE}
+yhat= 1.5 + 1.06*x + e
+mse=(sum((y-yhat)^2))/500
+mse
+
+yhat1=0.91 +1.38*x+0.6*x2+e  
+mse1=(sum((y-yhat1)^2))/500
+mse1
+
+yhat2=0.91  + 1.47*x + 0.56*x2 + (-0.04)*x3 + e
+mse2=(sum((y-yhat2)^2))/500
+mse2
+
+yhat3=0.88 + 1.48*x + 0.68*x2 + (-0.06)*x3 + (-0.03)*x4 + e
+mse3=(sum((y-yhat3)^2))/500
+mse3
+```
+
+\subsection{e.}
+
+Based on my MSE, I would recommend the model5, I determined it by mse1, because that is the model
+with the least amount of errors yhat1. I am a little surprised by it because I would either think that
+a regression with one variable will have the least amount of errors or the one with the most variables
+. This just demonstrates that just becuase we factor more restrictions into a model does not mean
+it will automatically be the best possible model. 
+
+\section{Question 3}
+
+\subsection{a.}
+
+```{r, include=TRUE}
+library(MASS)
+data(Boston)
+?Boston
+
+modz=lm(crim~zn, data = Boston)
+summary(modz)
+
+modi=lm(crim~indus, data = Boston)
+summary(modi)
+
+modc=lm(crim~chas, data = Boston)
+summary(modc)
+
+modn=lm(crim~nox, data = Boston)
+summary(modn)
+
+modr=lm(crim~rm, data = Boston)
+summary(modr)
+
+moda=lm(crim~age, data = Boston)
+summary(moda)
+
+modd=lm(crim~dis, data=Boston)
+summary(modd)
+
+modra=lm(crim~rad, data = Boston)
+summary(modra)
+
+modt=lm(crim~tax, data = Boston)
+summary(modt)
+
+modp=lm(crim~ptratio, data = Boston)
+summary(modp)
+
+modb=lm(crim~black, data = Boston)
+summary(modb)
+
+modl=lm(crim~lstat, data = Boston)
+summary(modl)
+
+modm=lm(crim~medv, data = Boston)
+summary(modm)
+
+plot(Boston$zn,Boston$crim)
+plot(Boston$indus,Boston$crim)
+plot(Boston$chas,Boston$crim)
+plot(Boston$nox,Boston$crim)
+plot(Boston$rm,Boston$crim)
+plot(Boston$age,Boston$crim)
+plot(Boston$dis,Boston$crim)
+plot(Boston$rad,Boston$crim)
+plot(Boston$tax,Boston$crim)
+plot(Boston$ptratio,Boston$crim)
+plot(Boston$black,Boston$crim)
+plot(Boston$lstat,Boston$crim)
+plot(Boston$medv,Boston$crim)
+```
+
+Each of the following variables gave interesting results. When I generated the modz model, I observed
+a negartive correlation between residental land zoned and crime rates and it's statistically 
+significant. For crime and the non retail business acres there is a positive correlation and it's 
+statisitically singificant. The is a negative correlation between the predictor and the charles river,
+but it is statisitcally insignificant, thus I question the correlation. I observe a positive 
+correlation between nitorgen oxides and the crime rate, and it is statistically significant. With room
+and the predictor, I notice a negative correlation and it's statisically significant indicating that 
+rooms have something to do with the crime rate. Here I observe a positive correlation between age and 
+crime rates and it is statistically significant. There is a positive correlation between the predictor
+and the resondent in modd, distance to employment centers. Also, the variable is statisitically 
+significant. Here I observe a positive correlation between access to radial highways and crime rates, 
+and it is a significant variable, indicating my independent variable has implications on the dependent
+variable. There is a positive correlation between tax and crime and the variable is statisitcally 
+significant. Pupil to teacher ratio has a positive correlation to crime and it is statistically 
+significant. Crime to proportion of black people by town has a positive correlation and it is 
+statistically significant. Crime has a positive correlation with the lower status of the city and it 
+is statistically significant. Crime has a negative correlation with median value of homes, and it is 
+statistically significant.
+
+\subsection{b.}
+
+```{r, include=TRUE}
+bmodel=lm(crim~., data = Boston)
+summary(bmodel)
+```
+
+Here when I ran a multiple linear regression I get vastly different results than compared to each 
+individully.Each variable has seen either a decrease or increase in thier respective coefficients, and
+really only zn, dis, rad, black and medv has any statistical significance.As a consequence, I can 
+reject the null the bj=0 with zn, dis, rad, black, and medv. I fail to reject the null for the rest.
+
+\subsection{c.}
+
+```{r, include=TRUE}
+simple=c(summary(modz)$coefficients[2,1], summary(modi)$coefficients[2,1], summary(modc)$coefficients[2,1], summary(modn)$coefficients[2,1], summary(modr)$coefficients[2,1], summary(moda)$coefficients[2,1], summary(modd)$coefficients[2,1], summary(modra)$coefficients[2,1], summary(modt)$coefficients[2,1], summary(modp)$coefficients[2,1], summary(modb)$coefficients[2,1], summary(modl)$coefficients[2,1], summary(modm)$coefficients[2,1])
+
+multi=c(summary(bmodel)$coefficients[,1])
+multi2=multi[2:14]
+
+plot(simple,multi2)
+```
+
+Based on this plot I generated I can conclude that the plots I generated from a. and b. do not have
+strong linear connection. Meaning that the models do not reflect each other and that I would have 
+really examine my R2 and adjR2, standard errors, sum squared errors, and other factors in order to 
+determine which model best represents the data.
+
+\subsection{d.}
+
+```{r, include=TRUE}
+lcrim=log(Boston$crim)
+bmodel2=lm(lcrim~., data = Boston)
+cook=cooks.distance(bmodel2)
+library(lmtest)
+bptest(bmodel2)
+
+
+struesb=studres(bmodel2)
+bmodel3=lm(lcrim~., data = Boston)
+shapiro.test(bmodel3$residuals)
+qqnorm(bmodel3$residuals)
+qqline(bmodel3$residuals)
+
+cooks3=cooks.distance(bmodel3)
+plot(cooks3)
+```
+
+Here with the models there demonstrates some outliers and some leverage points. I will implement,
+cooks distance, studentized tests, and residuals line to determine what if there are outliers and
+leverage points within the data. After implementing these, I can determine that there are leverage 
+points based on the shapiro test and the bp test. Also, there are outliers determined by
+the studentized residuals. Originally I though taking the log of crime would solve the problems,
+however it didn't and I had to pursue other tests.
